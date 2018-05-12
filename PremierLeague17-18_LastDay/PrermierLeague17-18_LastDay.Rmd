@@ -1,0 +1,54 @@
+---
+title: "PrermierLeague17-18_LastDay"
+author: "Nima Hamedani-Raja"
+date: "12 May 2018"
+output: html_document
+---
+
+```{r libraries}
+library(reshape2)
+library(dplyr)
+
+```
+
+
+# Possible Rankings
+
+```{r read data}
+matches <- read.csv("Matches.csv", stringsAsFactors = FALSE)
+table <- read.csv("table.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+matches$DRW <- "DRW"
+all_combinations <-
+    expand.grid(
+        unlist(matches[1,]), 
+        unlist(matches[2,]), 
+        unlist(matches[3,]), 
+        unlist(matches[4,]), 
+        unlist(matches[5,]), 
+        unlist(matches[6,]), 
+        unlist(matches[7,]), 
+        unlist(matches[8,]), 
+        unlist(matches[9,]), 
+        unlist(matches[10,]))
+names(all_combinations) <- paste("Match", 1:10, sep = "")
+
+# all_combinations$BUR <- (all_combinations$Var1 == "BUR") * 3 + (all_combinations$Var1 == "DRW")
+# table(all_combinations$Var1, all_combinations$BUR)
+
+
+
+get_a_team_s_point <- function(team, match){
+    (all_combinations %>% select(match) == team) * 3 + 
+        (all_combinations %>% select(match) == "DRW")
+}
+
+all_combinations <- all_combinations %>% mutate(BUR = get_a_team_s_point("BUR", "Match1"))
+
+
+
+
+```
+
