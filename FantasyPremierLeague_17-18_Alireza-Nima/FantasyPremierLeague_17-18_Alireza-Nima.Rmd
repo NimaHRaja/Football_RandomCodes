@@ -1,0 +1,70 @@
+---
+title: "FantasyPremierLeague_17-18_Alireza-Nima"
+author: "Nima Hamedani-Raja"
+date: "13 May 2018"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r, warning=FALSE, fig.width=12, fig.height=9}
+# Libraries
+library(ggplot2)
+library(dplyr)
+
+# Read and Clean
+Nima <- read.csv("Nima.csv")
+Alireza <- read.csv("Alireza.csv")
+Nima$Nima_points <- Nima$Points - Nima$Transfers.Cost
+Alireza$Alireza_points <- Alireza$Points - Alireza$Transfers.Cost
+Nima$player <- "Nima"
+Alireza$player <- "Alireza"
+DF <- merge(Nima, Alireza, by = "Gameweek")
+DF$delta <- DF$Nima_points - DF$Alireza_points
+DF$lead <- abs(DF$delta)
+DF$leader <- "none"
+DF[DF$delta > 0,]$leader <- "Nima"
+DF[DF$delta < 0,]$leader <- "Alireza"
+DF2 <- rbind(
+    Alireza[, c("Gameweek", "player", "Gameweek.Rank")],
+    Nima[, c("Gameweek", "player", "Gameweek.Rank")])
+DF2$is2018 <- (DF2$Gameweek > 19)
+
+## graphs
+ggplot(DF, aes(x = Nima_points, y = Alireza_points, label = Gameweek)) + 
+    geom_text(colour = "blue") +
+    geom_abline(slope = 1, intercept = 0, colour = "blue") +
+    expand_limits(x = 0, y = 0)
+
+ggplot(DF, aes(x = Gameweek, y = delta)) + 
+    geom_point(colour = "blue") + 
+    geom_smooth(colour = "blue", method = lm)
+
+ggplot(DF, aes(x = delta)) + 
+    geom_histogram(fill = "blue", binwidth = 5)
+
+ggplot(subset(DF, delta != 0), aes(x = lead, fill = leader)) + 
+    geom_density(alpha = 0.2)
+
+table(DF$leader)
+
+ggplot(subset(DF, delta != 0), aes(x = leader, y = lead)) + 
+    geom_boxplot(fill = "green")
+
+ggplot(subset(DF, delta != 0), aes(x = lead, fill = leader)) + 
+    geom_histogram(position = "dodge", binwidth = 5)
+
+ggplot(subset(DF, delta != 0), aes(x = leader, y = lead)) + 
+    geom_boxplot(fill = "green")
+
+ggplot(DF2, aes(x = player, y = Gameweek.Rank)) + 
+    geom_boxplot() +
+    expand_limits(y = 0)
+
+ggplot(DF2, aes(x = player, y = Gameweek.Rank)) + 
+    geom_boxplot() + 
+    facet_grid(. ~ is2018) + 
+    ggtitle("is2018?") +
+    expand_limits(y = 0)
+```
+
